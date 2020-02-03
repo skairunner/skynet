@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <RootNamespace>plantwatch_testclient</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MQTTnet" Version="3.0.8" />
+      <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="3.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\plantwatch-common\plantwatch-common.csproj" />
+    </ItemGroup>
+
+</Project>
