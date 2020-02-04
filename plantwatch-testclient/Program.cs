@@ -27,7 +27,12 @@ namespace plantwatch_testclient
                 .WithPayload(new Payload().ToBytes(false))
                 .WithAtLeastOnceQoS()
                 .Build();
-            await client.PublishAsync(msg);
+            for (var i = 0; i < 1000000; i++)
+            {
+                await client.PublishAsync(msg);
+                Console.WriteLine("Sent.");
+                await Task.Delay(100);
+            }
 
             Console.ReadLine();
         }

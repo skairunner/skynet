@@ -10,6 +10,9 @@ namespace plantwatch
             await Broker.StartBroker();
             Console.WriteLine("Plantwatch started.");
 
+            await Listener.StartListener();
+            Console.WriteLine("Plantwatch server started.");
+
             Console.ReadLine();
         }
     }
