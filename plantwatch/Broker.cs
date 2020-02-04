@@ -22,7 +22,7 @@ namespace plantwatch
                 {
                     // Add timestamps to messages, so that clients dont need to know their time
                     var payload = context.ApplicationMessage.Payload;
-                    var timestamp = BitConverter.GetBytes(DateTime.Now.ToFileTimeUtc());
+                    var timestamp = BitConverter.GetBytes(UnixTime.ToUnix(DateTimeOffset.Now));
                     var editedPayload = new List<byte>(payload);
                     editedPayload.AddRange(timestamp);
                     context.ApplicationMessage.Payload = editedPayload.ToArray();

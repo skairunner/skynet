@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
-using MQTTnet.Server;
 
 namespace plantwatch
 {
@@ -26,12 +24,13 @@ namespace plantwatch
             listener = new MqttFactory().CreateManagedMqttClient();
             listener.UseApplicationMessageReceivedHandler(context =>
             {
-                Console.WriteLine($"Msg posted to {context.ApplicationMessage.Topic} received.");
+                var payload = new Payload();
+                payload.FromBytes(context.ApplicationMessage.Payload);
+                Console.WriteLine(payload.ToString());
             });
             listener.UseConnectedHandler(async e =>
             {
                 await listener.SubscribeAsync(new TopicFilterBuilder().WithTopic("#").Build());
-                Console.WriteLine("Subscribed to farm moisture");
             });
             await listener.StartAsync(opt);
         }

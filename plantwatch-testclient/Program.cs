@@ -31,7 +31,7 @@ namespace plantwatch_testclient
             {
                 await client.PublishAsync(msg);
                 Console.WriteLine("Sent.");
-                await Task.Delay(100);
+                await Task.Delay(1000);
             }
 
             Console.ReadLine();

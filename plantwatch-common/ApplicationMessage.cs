@@ -19,6 +19,7 @@ namespace plantwatch
         // It should be 64 bit epoch time.
 
         public virtual int ExpectedLength => 16; // the expected length of the packet in bytes
+        protected virtual string StringHeader => $"Payload '{Type.ToString()}' v{Version} @ {UnixTime.FromUnix(Timestamp).LocalDateTime}";
 
         public virtual byte[] ToBytes(bool includeTimestamp = true)
         {
@@ -69,6 +70,11 @@ namespace plantwatch
         {
             Version = reader.ReadInt32();
             Timestamp = reader.ReadInt64();
+        }
+
+        public override string ToString()
+        {
+            return $"{StringHeader}: Empty";
         }
     }
 }
