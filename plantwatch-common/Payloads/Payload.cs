@@ -7,18 +7,20 @@ namespace plantwatch
     public enum PayloadTypes
     {
         Generic = 0,
+        Moisture
     }
     
     // MQTT packets have binary data as the payload, which we define here.
     public class Payload
     {
         public PayloadTypes Type = PayloadTypes.Generic;
-        public Int32 Version;
+        public Int32 Version = 1;
+        public UInt32 UID = 0; // Non-zero UIDs are valid
 
         public long Timestamp; // This is always the last thing to serialize, because it's appended to the packet data by the MQTT server.
         // It should be 64 bit epoch time.
 
-        public virtual int ExpectedLength => 16; // the expected length of the packet in bytes
+        public virtual int ExpectedLength => 20; // the expected length of the packet in bytes
         protected virtual string StringHeader => $"Payload '{Type.ToString()}' v{Version} @ {UnixTime.FromUnix(Timestamp).LocalDateTime}";
 
         public virtual byte[] ToBytes(bool includeTimestamp = true)
@@ -26,6 +28,9 @@ namespace plantwatch
             var stream = new MemoryStream();
             var writer = new BinaryWriter(stream);
             
+            writer.Write((int)Type);
+            writer.Write(Version);
+            writer.Write(UID);
             ConvertToBytes(writer);
 
             if (includeTimestamp)
@@ -43,8 +48,6 @@ namespace plantwatch
         // ideally implement the conversion entirely within this method, because the ToBytes method does some bookkeeping.
         protected virtual void ConvertToBytes(BinaryWriter writer)
         {
-            writer.Write((int)Type);
-            writer.Write(Version);
         }
 
         public virtual void FromBytes(byte[] bytes)
@@ -58,18 +61,19 @@ namespace plantwatch
 
             var packetType = (PayloadTypes) byteReader.ReadInt32();
 
-            if (packetType != PayloadTypes.Generic)
+            if (packetType != Type)
             {
                 throw new PacketParseError($"Expected the payload to be of value {Type} ({Type.ToString()}, but it was actually {packetType} ({packetType.ToString()}).");
             }
             
+            Version = byteReader.ReadInt32();
+            UID = byteReader.ReadUInt32();
             ConvertFromBytes(byteReader);
+            Timestamp = byteReader.ReadInt64();
         }
 
         protected virtual void ConvertFromBytes(BinaryReader reader)
         {
-            Version = reader.ReadInt32();
-            Timestamp = reader.ReadInt64();
         }
 
         public override string ToString()
