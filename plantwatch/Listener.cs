@@ -24,8 +24,22 @@ namespace plantwatch
             listener = new MqttFactory().CreateManagedMqttClient();
             listener.UseApplicationMessageReceivedHandler(context =>
             {
-                var payload = new Payload();
-                payload.FromBytes(context.ApplicationMessage.Payload);
+                Payload payload = null;
+                var type = PayloadUtilities.FindBinaryPayloadType(context.ApplicationMessage.Payload);
+                switch (type)
+                {
+                    case PayloadTypes.Generic:
+                        payload = new Payload();
+                        payload.FromBytes(context.ApplicationMessage.Payload);
+                        break;
+                    case PayloadTypes.Moisture:
+                        payload = new MoisturePayload();
+                        payload.FromBytes(context.ApplicationMessage.Payload);
+                        break;
+                    default:
+                        Console.WriteLine($"Received packet type '{type.ToString()}' with no handler.");
+                        return;
+                }
                 Console.WriteLine(payload.ToString());
             });
             listener.UseConnectedHandler(async e =>

@@ -13,7 +13,7 @@ namespace plantwatch
     // MQTT packets have binary data as the payload, which we define here.
     public class Payload
     {
-        public PayloadTypes Type = PayloadTypes.Generic;
+        public PayloadTypes Type { get; protected set; } = PayloadTypes.Generic;
         public Int32 Version = 1;
         public UInt32 UID = 0; // Non-zero UIDs are valid
 
@@ -21,7 +21,7 @@ namespace plantwatch
         // It should be 64 bit epoch time.
 
         public virtual int ExpectedLength => 20; // the expected length of the packet in bytes
-        protected virtual string StringHeader => $"Payload '{Type.ToString()}' v{Version} @ {UnixTime.FromUnix(Timestamp).LocalDateTime}";
+        protected string StringHeader => $"Payload '{Type.ToString()}' v{Version} @ {UnixTime.FromUnix(Timestamp).LocalDateTime}";
 
         public virtual byte[] ToBytes(bool includeTimestamp = true)
         {

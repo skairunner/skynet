@@ -22,14 +22,21 @@ namespace plantwatch_testclient
 
             var client = new MqttFactory().CreateManagedMqttClient();
             await client.StartAsync(opt);
-            var msg = new MqttApplicationMessageBuilder()
-                .WithTopic("farm/client1/moisture")
+            var generic_msg = new MqttApplicationMessageBuilder()
+                .WithTopic("farm/client1")
                 .WithPayload(new Payload().ToBytes(false))
                 .WithAtLeastOnceQoS()
                 .Build();
+            var rng = new Random();
             for (var i = 0; i < 1000000; i++)
             {
-                await client.PublishAsync(msg);
+                await client.PublishAsync(generic_msg);
+                var moisture_msg = new MqttApplicationMessageBuilder()
+                    .WithTopic("farm/client1/moisture")
+                    .WithPayload(new MoisturePayload{ MoistureFraction = rng.NextDouble() }.ToBytes(false))
+                    .WithAtLeastOnceQoS()
+                    .Build();
+                await client.PublishAsync(moisture_msg);
                 Console.WriteLine("Sent.");
                 await Task.Delay(1000);
             }
