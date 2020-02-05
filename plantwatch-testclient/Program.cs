@@ -28,15 +28,17 @@ namespace plantwatch_testclient
                 .WithAtLeastOnceQoS()
                 .Build();
             var rng = new Random();
+            var prevValue = 0.0;
             for (var i = 0; i < 1000000; i++)
             {
+                prevValue += rng.NextDouble() * 0.01;
                 await client.PublishAsync(generic_msg);
-                var moisture_msg = new MqttApplicationMessageBuilder()
+                var moistureMsg = new MqttApplicationMessageBuilder()
                     .WithTopic("farm/client1/moisture")
-                    .WithPayload(new MoisturePayload{ MoistureFraction = rng.NextDouble() }.ToBytes(false))
+                    .WithPayload(new MoisturePayload{ MoistureFraction = prevValue}.ToBytes(false))
                     .WithAtLeastOnceQoS()
                     .Build();
-                await client.PublishAsync(moisture_msg);
+                await client.PublishAsync(moistureMsg);
                 Console.WriteLine("Sent.");
                 await Task.Delay(1000);
             }
