@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
+using dotenv.net;
+using dotenv.net.Utilities;
 using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
 using InfluxDB.Collector;
+using InfluxDB.Collector.Diagnostics;
 
 namespace plantwatch
 {
@@ -14,25 +16,39 @@ namespace plantwatch
         public static IManagedMqttClient listener;
         public static MetricsCollector connection; // to InfluxDB
 
-        public static async Task StartListener()
+        public static void Initialize()
         {
+            DotEnv.Config();
+            var envReader = new EnvReader();
+            var address = envReader.GetStringValue("INFLUX_ADDRESS");
+            var dbname = envReader.GetStringValue("INFLUX_DBNAME");
+            var username = envReader.GetStringValue("INFLUX_USERNAME");
+            var password = envReader.GetStringValue("INFLUX_PASSWORD");
             connection = new CollectorConfiguration()
                 .Tag.With("host", "client1")
-                .Batch.AtInterval(TimeSpan.FromSeconds(2))
-                .WriteTo.InfluxDB("http://localhost:8086", "farmdb")
+                .Batch.AtInterval(TimeSpan.FromSeconds(5))
+                .WriteTo.InfluxDB(address, dbname, username, password)
                 .CreateCollector();
-            
+            CollectorLog.RegisterErrorHandler((m, e) =>
+            {
+                Console.WriteLine($"{m}: {e}");
+            });
+        }
+        
+        public static async Task StartListener()
+        {          
             var mqttClientOptions = new MqttClientOptionsBuilder()
                 .WithClientId("server")
                 .WithTcpServer("localhost", 1884)
                 .Build();
+
+            listener = new MqttFactory().CreateManagedMqttClient();
             
             var opt = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
                 .WithClientOptions(mqttClientOptions)
                 .Build();
-
-            listener = new MqttFactory().CreateManagedMqttClient();
+            
             listener.UseApplicationMessageReceivedHandler(context =>
             {
                 Payload payload = null;
