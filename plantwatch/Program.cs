@@ -28,7 +28,7 @@ namespace plantwatch
             await Listener.StartListener();
             Console.WriteLine("Plantwatch server started.");
 
-            var task = Task.Run(async () => { await Heartbeat(TimeSpan.FromSeconds(1)); });
+            var task = Task.Run(async () => { await Heartbeat(TimeSpan.FromSeconds(10)); });
 
             Console.ReadLine();
         }
