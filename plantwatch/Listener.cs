@@ -57,21 +57,19 @@ namespace plantwatch
                 {
                     case PayloadTypes.Generic:
                         payload = new Payload();
-                        payload.FromBytes(context.ApplicationMessage.Payload);
                         break;
                     case PayloadTypes.Moisture:
                         payload = new MoisturePayload();
-                        payload.FromBytes(context.ApplicationMessage.Payload);
-                        connection.Write($"plant{payload.UID}",
-                            new Dictionary<string, object>
-                            {
-                                {"moisture", (payload as MoisturePayload).MoistureFraction}
-                            });
+                        break;
+                    case PayloadTypes.Light:
+                        payload = new LightPayload();
                         break;
                     default:
                         Console.WriteLine($"Received packet type '{type.ToString()}' with no handler.");
                         return;
-                }
+                } 
+                payload.FromBytes(context.ApplicationMessage.Payload);
+                payload.SendInflux(connection, "plant");
                 Console.WriteLine(payload.ToString());
             });
             listener.UseConnectedHandler(async e =>

@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using InfluxDB.Collector;
 
 namespace plantwatch
 {
@@ -12,7 +14,7 @@ namespace plantwatch
             Type = PayloadTypes.Moisture;
         }
 
-        public override int ExpectedLength => base.ExpectedLength + 8;
+        public override int ExpectedLength => base.ExpectedLength + 4;
 
         protected override void ConvertFromBytes(BinaryReader reader)
         {
@@ -22,6 +24,17 @@ namespace plantwatch
         protected override void ConvertToBytes(BinaryWriter writer)
         {
             writer.Write(MoistureFraction);
+        }
+
+        public override void SendInflux(MetricsCollector collector, string prefix)
+        {
+            collector.Write(
+                $"{prefix}{UID}",
+                new Dictionary<string, object>
+                {
+                    {"moisture", MoistureFraction}
+                }
+            );
         }
 
         public override string ToString()
